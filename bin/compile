@@ -20,8 +20,8 @@ curl --retry 3 --silent --location $JVM_COMMON_BUILDPACK | tar xzm -C /tmp/jvm-c
 
 install_java_with_overlay ${BUILD_DIR}
 
-WILDFLY_VERSION="10.1.0.Final"
-WILDFLY_SHA1="9ee3c0255e2e6007d502223916cefad2a1a5e333"
+WILDFLY_VERSION="15.0.0.Final"
+WILDFLY_SHA1="a387f2ebf1b902fc09d9526d28b47027bc9efed9"
 JBOSS_HOME=".jboss/wildfly-${WILDFLY_VERSION}"
 
 cd $BUILD_DIR
@@ -40,8 +40,12 @@ echo "moved"
 rm wildfly-$WILDFLY_VERSION.tar.gz
 echo "done"
 
+echo -n "-----> Deploying Standalone... "
+cp /src/main/resources/wildfly/standalone/configuration/standalone.xml $JBOSS_HOME/standalone/configuration/
+echo "done"
+
 echo -n "-----> Deploying war file(s)... "
-cp target/*.war $JBOSS_HOME/standalone/deployments/
+cp /target/*.war $JBOSS_HOME/standalone/deployments/
 echo "done"
 
 echo "-----> Creating configuration..."
@@ -49,7 +53,7 @@ if [ -f $BUILD_DIR/Procfile ]; then
   echo "        - Using existing process types"
 else
   cat << EOF > $BUILD_DIR/Procfile
-web: \$JBOSS_HOME/bin/standalone.sh -b=0.0.0.0 -Djboss.http.port=\$PORT
+web: \$JBOSS_HOME/bin/standalone.sh -b=0.0.0.0 -Djboss.http.port=\$PORT -Djava.net.preferIPv4Stack=true
 EOF
 fi
 
